@@ -8,14 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isLoading = true
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            if isLoading {
+                SplashView()
+                    .onAppear{
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                isLoading = false
+                            }
+                        }
+                    }
+            } else {
+                OnboardingView()
+            }
         }
-        .padding()
+        .preferredColorScheme(.dark)
     }
 }
 
