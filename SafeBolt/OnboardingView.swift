@@ -9,7 +9,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @State private var currentStep = 0
-    @State private var showAuthView = false
+    var onComplete: () -> Void
     
     let steps = [
         OnboardingStep(icon: "shield.checkered", title: "Fast & Secure Banking", subtitle: "Experience seamless banking with top-notch security and lightning-fast transactions."),
@@ -21,17 +21,13 @@ struct OnboardingView: View {
         ZStack {
             darkBlueBackground.ignoresSafeArea()
             
-            if showAuthView {
-                AuthView()
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-            } else {
                 VStack {
                     HStack {
                         Spacer()
                         if currentStep < steps.count - 1 {
                             Button("Skip") {
                                 withAnimation {
-                                    showAuthView = true
+                                    onComplete()
                                 }
                             }
                             .foregroundColor(themeBrown)
@@ -61,7 +57,7 @@ struct OnboardingView: View {
                         if currentStep == steps.count - 1 {
                             AppButton(title: "Get Started") {
                                 withAnimation {
-                                    showAuthView = true
+                                    onComplete()
                                 }
                             }
                         } else {
@@ -79,7 +75,6 @@ struct OnboardingView: View {
                 .foregroundColor(.white)
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             }
-        }
     }
     
     struct OnboardingStep {
@@ -124,5 +119,5 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(onComplete: {})
 }

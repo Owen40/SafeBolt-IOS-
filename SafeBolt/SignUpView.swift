@@ -14,6 +14,22 @@ struct SignUpView: View {
     @State private var confirmPassword = ""
     @State private var agreedToTerms = false
     var showSignIn: () -> Void
+    var onSignUp: (String) -> Void
+    
+    private func isValidEmail(_ email: String) -> Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return emailPred.evaluate(with: email)
+    }
+    
+    private var isSignUpDisabled: Bool {
+        return fullName.isEmpty
+        || !isValidEmail(email)
+        || phone.isEmpty
+        || password.isEmpty
+        || password != confirmPassword
+        || !agreedToTerms
+    }
     
     var body : some View {
         ZStack {
@@ -55,9 +71,10 @@ struct SignUpView: View {
                     
                     AppButton(title: "Create Account") {
                         // Create account action
+                        onSignUp("Account Created!")
                     }
-                    .disabled(!agreedToTerms)
-                    .opacity(agreedToTerms ? 1.0 : 0.6)
+                    .disabled(isSignUpDisabled)
+                    .opacity(isSignUpDisabled ? 0.5 : 1.0)
                     
                     HStack {
                         Spacer()
@@ -77,7 +94,7 @@ struct SignUpView: View {
         .foregroundColor(.white)
     }
 }
-
-#Preview {
-    SignUpView(showSignIn: {})
-}
+//
+//#Preview {
+//    SignUpView(showSignIn: {})
+//}

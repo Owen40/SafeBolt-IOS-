@@ -7,25 +7,57 @@
 
 import SwiftUI
 
+enum AppState {
+    case loading, onboarding, auth, main
+}
+
 struct ContentView: View {
-    @State private var isLoading = true
+    @State private var appState: AppState = .loading
+    
+    @State private var showToast = false
+    @State private var toastMessage = ""
     
     var body: some View {
         ZStack {
-            if isLoading {
+            switch appState {
+            case .loading:
                 SplashView()
-                    .onAppear{
+                    .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                             withAnimation(.easeInOut(duration: 0.5)) {
-                                isLoading = false
+                                appState = .onboarding
                             }
                         }
                     }
-            } else {
-                OnboardingView()
+            case .onboarding:
+                OnboardingView(onComplete: {
+                    withAnimation {
+                        appState = .auth
+                    }
+                })
+            case .auth:
+                AuthView(onAuthenticated: { message in
+                    toastMessage = message
+                    showToast = true
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation {
+                            appState = .main
+                        }
+                    }
+                })
+            case .main:
+                ProfileView(onLogout: {
+                    withAnimation {
+                        appState = .auth
+                    }
+                })
             }
         }
         .preferredColorScheme(.dark)
+        .overlay(
+            ToastView(message: toastMessage, isShowing: $showToast)
+        )
     }
 }
 

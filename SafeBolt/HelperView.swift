@@ -29,6 +29,8 @@ struct GlassTextField: View {
     @Binding var text: String
     var isSecure: Bool = false
     
+    @State private var isPasswordVisible: Bool = false
+    
     // Custom placeholder text
     private var placeholder: String {
         "Enter your \(title.lowercased())"
@@ -43,8 +45,21 @@ struct GlassTextField: View {
             ZStack(alignment: .leading) {
                 // The main field
                 if isSecure {
-                    TextField("", text: $text)
-                        .fieldStyle()
+                    HStack {
+                        if isPasswordVisible {
+                            TextField("", text: $text)
+                                .fieldStyle()
+                        } else {
+                            SecureField("", text: $text)
+                                .fieldStyle()
+                        }
+                        
+                        Button(action: { isPasswordVisible.toggle() }) {
+                            Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                                .foregroundColor(.white.opacity(0.5))
+                        }
+                        .padding(.trailing, 16)
+                    }
                 } else {
                     TextField("", text: $text)
                         .fieldStyle()
@@ -124,5 +139,35 @@ struct CheckboxToggleStyle: ToggleStyle {
             }
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct ToastView: View {
+    var message: String
+    @Binding var isShowing: Bool
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            if isShowing {
+                Text(message)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(12)
+                    .shadow(radius: 5)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            withAnimation {
+                                isShowing = false
+                            }
+                        }
+                    }
+            }
+        }
+        .padding()
+        .animation(.spring(), value: isShowing)
     }
 }

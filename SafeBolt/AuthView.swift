@@ -12,22 +12,33 @@ enum AuthScreen {
 
 struct AuthView: View {
     @State private var currentScreen: AuthScreen = .signIn
+    var onAuthenticated: (String) -> Void
     
     var body: some View {
         ZStack {
             if currentScreen == .signIn {
-                SignInView(showSignUp: {
+                SignInView(
+                showSignUp: {
                     withAnimation(.easeInOut) {
                         currentScreen = .signUp
                     }
-                })
+                },
+                onSignIn: { message in
+                    onAuthenticated(message)
+                }
+                )
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             } else {
-                SignUpView(showSignIn: {
+                SignUpView(
+                    showSignIn: {
                     withAnimation(.easeInOut) {
                         currentScreen = .signIn
                     }
-                })
+                },
+                    onSignUp: {  message in
+                        onAuthenticated(message)
+                    }
+                )
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
             }
         }

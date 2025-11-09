@@ -10,6 +10,17 @@ struct SignInView : View {
     @State private var email = ""
     @State private var password = ""
     var showSignUp: () -> Void
+    var onSignIn: (String) -> Void
+    
+    private func isValidEmail(_ email: String) -> Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPred = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
+        return emailPred.evaluate(with: email)
+    }
+    
+    private var isSignInDisabled: Bool {
+        return !isValidEmail(email) || password.isEmpty
+    }
     
     var body: some View {
         ZStack {
@@ -43,7 +54,10 @@ struct SignInView : View {
                     
                     AppButton(title: "Sign In") {
                         // Action
+                        onSignIn("Signed In Successfully!")
                     }
+                    .disabled(isSignInDisabled)
+                    .opacity(isSignInDisabled ? 0.6 : 1.0)
                     
                     HStack {
                         Spacer()
@@ -79,6 +93,3 @@ struct SignInView : View {
     }
 }
 
-#Preview {
-    SignInView(showSignUp: {})
-}
