@@ -47,7 +47,7 @@ struct ContentView: View {
                     }
                 })
             case .main:
-                ProfileView(onLogout: {
+                MainTabView(onLogout: {
                     withAnimation {
                         appState = .auth
                     }
