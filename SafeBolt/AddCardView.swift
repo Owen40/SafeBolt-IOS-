@@ -11,6 +11,8 @@ struct AddCardView: View {
     
     @State private var cardholderName: String = ""
     @State private var purpose: CardPurpose = .personal
+    @State private var cardType: CardType = .visa
+    @State private var initialDeposit: String = ""
     
     var onAdd: (Card) -> Void // Callback to pass the new card back
     
@@ -35,6 +37,8 @@ struct AddCardView: View {
                 VStack(spacing: 20) {
                     GlassTextField(title: "Cardholder Name", text: $cardholderName)
                     
+                    GlassTextField(title: "Initial Deposit (Optional)", text: $initialDeposit)
+                    
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Card Purpose")
                             .font(.caption)
@@ -51,13 +55,34 @@ struct AddCardView: View {
                     }
                 }
                 
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Card Type")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                    
+                    Picker("Card Type", selection: $cardType) {
+                        ForEach(CardType.allCases) { type in
+                            Text(type.rawValue).tag(type)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .background(.white.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                
                 Spacer()
                 
                 // Create Button
                 AppButton(title: "Create Card") {
+                    let deposit = Double(initialDeposit) ?? 0.0
                     let newCard = Card(
                         cardholderName: cardholderName,
-                        purpose: purpose
+                        cardNumber: Card.generateCardNumber(for: cardType),
+                        expiryDate: Card.generateExpiryDate(),
+                        cvv: Card.generateCVV(for: cardType),
+                        purpose: purpose,
+                        cardType: cardType,
+                        balance: deposit
                     )
                     onAdd(newCard) // Pass the new card back
                     dismiss()

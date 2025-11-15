@@ -12,6 +12,9 @@ struct CustomizeCardView: View {
     @Binding var card: Card // Use a Binding to edit the card directly
     
     var onSave: (Card) -> Void // Callback to save changes
+    var onDelete: () -> Void
+    
+    @State private var isShowingDeleteAlert = false
     
     var body: some View {
         ZStack {
@@ -67,12 +70,34 @@ struct CustomizeCardView: View {
                     onSave(card) // Pass the updated card back
                     dismiss()
                 }
-                .disabled(card.cardholderName.isEmpty)
-                .opacity(card.cardholderName.isEmpty ? 0.6 : 1.0)
+//                .disabled(card.cardholderName.isEmpty)
+//                .opacity(card.cardholderName.isEmpty ? 0.6 : 1.0)
+                Button(action: {
+                    isShowingDeleteAlert = true
+                }) {
+                    Text("Delete Card")
+                        .font(.headline.bold())
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.white.opacity(0.05))
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.1), lineWidth: 1))
+                }
+                .padding(.top, 10)
             }
             .padding(25)
             .foregroundColor(.white)
             .preferredColorScheme(.dark)
+            .alert("Delete Card?", isPresented: $isShowingDeleteAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    onDelete()
+                    dismiss()
+                }
+            } message: {
+                Text("Are you sure you want to permanently delete this card? This action cannot be undone.")
+            }
         }
     }
 }

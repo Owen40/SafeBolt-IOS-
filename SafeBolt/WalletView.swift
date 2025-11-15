@@ -12,6 +12,7 @@ struct WalletView: View {
     
     @State private var isAddingCard = false
     @State private var isCustomizingCard = false
+    @State private var isAddingMoney = false
     
     var body: some View {
         ZStack {
@@ -65,11 +66,11 @@ struct WalletView: View {
                             VStack(spacing: 15) {
                                 HStack(spacing: 15) {
                                     CardActionButton(title: "Settings", icon: "slider.horizontal.3", enabled: !cards.isEmpty)
-                                    CardActionButton(title: "Freeze", icon: "snow", enabled: !cards.isEmpty)
+                                    CardActionButton(title: "Add Money", icon: "plus.circle.fill", enabled: !cards.isEmpty)
                                 }
                                 HStack(spacing: 15) {
                                     CardActionButton(title: "View PIN", icon: "eye.fill", enabled: !cards.isEmpty)
-                                    CardActionButton(title: "Details", icon: "creditcard.fill", enabled: !cards.isEmpty)
+                                    CardActionButton(title: "Freeze", icon: "snow", enabled: !cards.isEmpty)
                                 }
                             }
                             .padding(.horizontal)
@@ -93,16 +94,46 @@ struct WalletView: View {
         }
         .sheet(isPresented: $isCustomizingCard) {
                     // We pass a binding to the selected card
-                    CustomizeCardView(card: $cards[selectedCardIndex]) { updatedCard in
-                        // This is the callback when a card is customized
+            if selectedCardIndex < cards.count {
+                CustomizeCardView(
+                    card: $cards[selectedCardIndex],
+                    onSave: { updatedCard in
                         cards[selectedCardIndex] = updatedCard
                         CardStorage.shared.saveCards(cards)
+                    },
+                    onDelete: {
+                        deleteCard()
                     }
+                )
                 }
+            }
+        
+        .sheet(isPresented: $isAddingMoney) {
+            if selectedCardIndex < cards.count {
+                AddMoneyView(card: $cards[selectedCardIndex]) {
+                    saveCards()
+                }
+            }
+        }
     }
     
     func loadCards() {
         self.cards = CardStorage.shared.loadCards()
+    }
+    
+    func deleteCard() {
+        guard selectedCardIndex < cards.count else { return }
+        
+        cards.remove(at: selectedCardIndex)
+//        CardStorage.shared.saveCards(cards)
+        saveCards()
+        
+        if selectedCardIndex >= cards.count && !cards.isEmpty {
+            selectedCardIndex = cards.count - 1
+        }
+    }
+    func saveCards() {
+        CardStorage.shared.saveCards(cards)
     }
 }
 
@@ -117,14 +148,21 @@ struct CardView: View {
                     .textCase(.uppercase)
                     .foregroundColor(.white.opacity(0.7))
                 Spacer()
-                Image(systemName: "bolt.shield.fill") // App Logo
-                    .font(.title2)
+                Text(card.cardType.rawValue)
+                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .italic()
+//                Image(systemName: "bolt.shield.fill") // App Logo
+//                    .font(.title2)
             }
             
             Spacer()
             
+            Text(card.balance, format: .currency(code: "KES"))
+                .font(.system(size: 20, weight: .semibold))
+                .padding(.bottom, -10)
+            
             Text(card.cardNumber)
-                .font(.system(size: 22, weight: .bold, design: .monospaced))
+                .font(.system(size: card.cardType == .amex ? 20 : 22, weight: .bold, design: .monospaced))
                 .shadow(radius: 1, y: 1)
             
             HStack {
